@@ -1,0 +1,33 @@
+HAproxy健康检查的三种方式
+1、通过监听端口进行健康检测 。这种检测方式，haproxy只会去检查后端server的端口，并不能保证服务的真正可用。
+配置示例：
+复制代码
+listen http_proxy 0.0.0.0:80
+        mode http
+        cookie SERVERID
+        balance roundrobin
+        option httpchk
+        server web1 192.168.1.1:80 cookie server01 check
+        server web2 192.168.1.2:80 cookie server02 check inter 500 rise 1 fall 2
+复制代码
+2、通过URI获取进行健康检测 。检测方式，是用过去GET后端server的的web页面，基本上可以代表后端服务的可用性。 
+配置示例：
+复制代码
+listen http_proxy 0.0.0.0:80
+        mode http
+        cookie SERVERID
+        balance roundrobin
+        option httpchk GET /index.html
+        server web1 192.168.1.1:80 cookie server01 check
+        server web2 192.168.1.2:80 cookie server02 check inter 500 rise 1 fall 2
+复制代码
+3、通过request获取的头部信息进行匹配进行健康检测 。这种检测方式，则是基于高级，精细的一些监测需求。通过对后端服务访问的头部信息进行匹配检测。 
+配置示例：
+复制代码
+listen http_proxy 0.0.0.0:80
+        mode http
+        cookie SERVERID
+        balance roundrobin
+        option httpchk HEAD /index.jsp HTTP/1.1\r\nHost:\ www.xxx.com
+        server web1 192.168.1.1:80 cookie server01 check
+        server web2 192.168.1.2:80 cookie server02 check inter 500 rise 1 fall 2
